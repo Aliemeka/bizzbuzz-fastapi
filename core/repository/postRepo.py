@@ -72,3 +72,7 @@ def change_post_status(id: int, status: Status):
     post = get_post(id)
     post.status = status
     return post
+
+def delete_post(id: int):
+    post = get_post(id)
+    del(post)

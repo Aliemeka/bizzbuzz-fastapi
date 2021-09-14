@@ -53,3 +53,12 @@ async def change_post_status(id: int, payload: StatusPayload):
         return post
     except Exception as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])
+
+
+@router.delete("/{id}", response_model=TypedDict("Message", message=str))
+async def remove_post(id: int):
+    try:
+        postRepo.delete_post
+        return {"message": f"Post with id: {id} has been deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=e.args[0]["message"])
