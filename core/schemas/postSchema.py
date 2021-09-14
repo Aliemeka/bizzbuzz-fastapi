@@ -1,13 +1,7 @@
-from enum import Enum
 from pydantic import BaseModel
 from typing import Optional
 
-
-class Status(str, Enum):
-    published = "Published"
-    draft = "Draft"
-    archived = "Archived"
-    deleted = "Deleted"
+from ..config.enums import Status
 
 
 class BasePost(BaseModel):
@@ -18,3 +12,6 @@ class BasePost(BaseModel):
 
 class Post(BasePost):
     id: int
+
+    class Config:
+        orm_mode = True
