@@ -4,16 +4,16 @@ from typing import Optional
 
 
 class Status(str, Enum):
-    active = "Active"
-    inactive = "Inactive"
-    suspended = "Suspended"
+    published = "Published"
+    draft = "Draft"
+    archived = "Archived"
     deleted = "Deleted"
 
 
 class BasePost(BaseModel):
     name: str
     description: str
-    status: Optional[Status] = Status.active
+    status: Optional[Status] = Status.published
 
 
 class Post(BasePost):
