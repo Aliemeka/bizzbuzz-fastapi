@@ -1,78 +1,85 @@
 from typing import List
+from asyncio.runners import run
+from sqlalchemy.orm import Session
 
 from ..schemas.postSchema import BasePost, Post, Status
+from ..models.postModel import PostModel
 
 
-posts: List[Post] = []
-
-
-def generate_number():
-    i = 1
-    while True:
-        yield i
-        i += 1
-
-
-post_id = generate_number()
-
-
-def get_posts():
+async def get_posts(db: Session):
+    posts = [post for post in db.query(PostModel).all()]
     return posts
 
 
-def create_post(post: BasePost):
-    somePost = dict(post)
-    somePost["id"] = next(post_id)
-    newPost = Post(**somePost)
-    posts.append(newPost)
-    return newPost
+async def create_post(db: Session, post: BasePost):
+    db_post = PostModel(**post.dict())
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+    print(db_post)
+    return db_post
 
 
-def add_posts(posts: List[BasePost]):
+async def add_posts(db: Session, posts: List[BasePost]):
     for post in posts:
-        yield create_post(post)
+        yield await create_post(db, post)
 
 
-def add_mulitple(postList: List[BasePost]):
-    posts = [post for post in add_posts(postList)]
+async def add_mulitple(db: Session, postList: List[BasePost]):
+
+    posts = [post async for post in add_posts(db, postList)]
     return posts
 
 
-def get_post(id: int):
+async def get_post(db: Session, id: int):
+    posts = await get_posts(db)
     if len(posts) < 1:
         raise Exception({"message": "There are no posts yet!"})
-    for post in posts:
-        if post.id == id:
-            return post
+
+    db_post = db.query(PostModel).filter(PostModel.id == id).first()
+    if db_post:
+        return db_post
 
     raise Exception({"message": f"Cannot find post with id: {id}"})
 
 
-def get_post_by_status(status: Status, postList: List[Post]):
+def get_post_by_status(status: Status, postList: List[Post]) -> List[Post]:
+    """
+    Returns post that match the status
+    """
     return [post for post in postList if post.status == status]
 
 
-def get_post_by_attribute(attribute: str, postList: List[Post]):
+def get_post_by_attribute(attribute: str, postList: List[Post]) -> List[Post]:
+    """
+    Returns post which name or descriptions contain the search string
+    """
     return [
         post
         for post in postList
-        if attribute.lower() in post.name.lower()
+        if attribute.lower() in post.title.lower()
         or attribute.lower() in post.description.lower()
     ]
 
 
-def edit_post(id: int, details: BasePost):
-    post = get_post(id)
-    post.name = details.name
+async def edit_post(db: Session, id: int, details: BasePost):
+    post = await get_post(db, id)
+    post.title = details.title
     post.description = details.description
+    db.commit()
+    db.refresh(post)
     return post
 
 
-def change_post_status(id: int, status: Status):
-    post = get_post(id)
+async def change_post_status(db: Session, id: int, status: Status):
+    post = await get_post(db, id)
     post.status = status
+    db.commit()
+    db.refresh(post)
     return post
 
-def delete_post(id: int):
-    post = get_post(id)
-    del(post)
+
+async def delete_post(db: Session, id: int):
+    post = await get_post(db, id)
+    db.delete(post)
+    db.commit()

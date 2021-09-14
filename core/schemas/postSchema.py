@@ -5,7 +5,7 @@ from ..config.enums import Status
 
 
 class BasePost(BaseModel):
-    name: str
+    title: str
     description: str
     status: Optional[Status] = Status.published
 
