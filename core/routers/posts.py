@@ -18,10 +18,11 @@ async def get_posts(
     db: Session = Depends(get_db),
 ):
     posts = await postRepo.get_posts(db)
-    if status != None:
-        posts = postRepo.get_post_by_status(status, posts)
-    if search:
-        posts = postRepo.get_post_by_attribute(search, posts)
+    if len(posts):
+        if status != None:
+            posts = postRepo.get_post_by_status(status, posts)
+        if search:
+            posts = postRepo.get_post_by_attribute(search, posts)
     return posts
 
 
@@ -36,7 +37,7 @@ async def add_multiple(posts: List[BasePost], db: Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=Post)
-async def get_post(id: int, db: Session = Depends(get_db)):
+async def get_post(id: str, db: Session = Depends(get_db)):
     try:
         post = await postRepo.get_post(db, id)
         return post
@@ -45,7 +46,7 @@ async def get_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", response_model=Post)
-async def update_post(id: int, details: BasePost, db: Session = Depends(get_db)):
+async def update_post(id: str, details: BasePost, db: Session = Depends(get_db)):
     try:
         post = await postRepo.edit_post(db, id, details)
         return post
@@ -55,7 +56,7 @@ async def update_post(id: int, details: BasePost, db: Session = Depends(get_db))
 
 @router.patch("/{id}/status", response_model=Post)
 async def change_post_status(
-    id: int, payload: StatusPayload, db: Session = Depends(get_db)
+    id: str, payload: StatusPayload, db: Session = Depends(get_db)
 ):
     try:
         post = await postRepo.change_post_status(db, id, payload["status"])
@@ -65,7 +66,7 @@ async def change_post_status(
 
 
 @router.delete("/{id}", response_model=TypedDict("Message", message=str))
-async def remove_post(id: int, db: Session = Depends(get_db)):
+async def remove_post(id: str, db: Session = Depends(get_db)):
     try:
         await postRepo.delete_post(db, id)
         return {"message": f"Post with id: {id} has been deleted successfully"}

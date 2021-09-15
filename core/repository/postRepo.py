@@ -31,7 +31,7 @@ async def add_mulitple(db: Session, postList: List[BasePost]):
     return posts
 
 
-async def get_post(db: Session, id: int):
+async def get_post(db: Session, id: str):
     posts = await get_posts(db)
     if len(posts) < 1:
         raise Exception({"message": "There are no posts yet!"})
@@ -62,7 +62,7 @@ def get_post_by_attribute(attribute: str, postList: List[Post]) -> List[Post]:
     ]
 
 
-async def edit_post(db: Session, id: int, details: BasePost):
+async def edit_post(db: Session, id: str, details: BasePost):
     post = await get_post(db, id)
     post.title = details.title
     post.description = details.description
@@ -71,7 +71,7 @@ async def edit_post(db: Session, id: int, details: BasePost):
     return post
 
 
-async def change_post_status(db: Session, id: int, status: Status):
+async def change_post_status(db: Session, id: str, status: Status):
     post = await get_post(db, id)
     post.status = status
     db.commit()
@@ -79,7 +79,7 @@ async def change_post_status(db: Session, id: int, status: Status):
     return post
 
 
-async def delete_post(db: Session, id: int):
+async def delete_post(db: Session, id: str):
     post = await get_post(db, id)
     db.delete(post)
     db.commit()

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from uuid import UUID
 
 from ..config.enums import Status
 
@@ -11,7 +12,7 @@ class BasePost(BaseModel):
 
 
 class Post(BasePost):
-    id: int
+    id: UUID
 
     class Config:
         orm_mode = True
