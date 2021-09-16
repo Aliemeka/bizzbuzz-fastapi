@@ -1,10 +1,8 @@
 from typing import List
-from asyncio.runners import run
 from sqlalchemy.orm import Session
 
+from ..models.postModel import Post as PostModel
 from ..schemas.postSchema import PostCreate, Post, Status
-from ..models.postModel import PostModel
-from ..config.typing import validate_uuid
 
 
 class NotFoundException(Exception):

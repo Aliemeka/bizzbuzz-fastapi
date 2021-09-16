@@ -1,4 +1,3 @@
-from core.dependencies.validations import validate_id
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional, TypedDict
 from sqlalchemy.orm.session import Session
@@ -7,6 +6,7 @@ from ..schemas.postSchema import Post, PostCreate, Status
 from ..repository import postRepo
 from ..repository.postRepo import NotFoundException
 from ..config.session import get_db
+from ..dependencies.validations import validate_id
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
