@@ -1,8 +1,12 @@
 from fastapi import FastAPI
-from core.routers import posts
-from core.config.database import engine
-from core.models import postModel
+from fastapi.routing import APIRouter
+from typing import List
 
+from core.routers import posts, users
+from core.config.database import engine
+from core.models import postModel, userModel
+
+userModel.BaseModel.metadata.create_all(bind=engine)
 postModel.BaseModel.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -11,9 +15,15 @@ app = FastAPI(
     description="Bizzbuzz api for post sharing social network",
 )
 
-app.include_router(posts.router, prefix="/api/v1")
+
+def configure_routes(routers: List[APIRouter], prefix: str = "/api/v1"):
+    for router in routers:
+        app.include_router(router, prefix=prefix)
+
+
+configure_routes([posts.router, users.router])
 
 
 @app.get("/")
 def hello():
-    return {"message": "Hello!, Welcome to Bizzbuzz on fastAPI"}
+    return {"message": "Hello!, Welcome to Bizzbuzz on FastAPI"}

@@ -1,14 +1,15 @@
-from sqlalchemy import String, Integer, Enum, Column
-
+from sqlalchemy import Boolean, String, Column
+from sqlalchemy.orm import relationship
 
 from .base import BaseModel
-from ..config.enums import Status
 
 
-class UserModel(BaseModel):
-    __tablename__ = "users"
+class User(BaseModel):
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    username = Column(String, nullable=False, unique=True)
+    email = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    description = Column(String)
-    status = Column(Enum(Status))
+    posts = relationship("Post", back_populates="author")
