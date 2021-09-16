@@ -1,11 +1,9 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, DateTime
 import uuid
 from datetime import datetime
 
+from ..config.database import Base
 from ..config.typing import GUID
-
-Base = declarative_base()
 
 
 class BaseModel(Base):
