@@ -40,3 +40,20 @@ class GUID(TypeDecorator):
             if not isinstance(value, uuid.UUID):
                 value = uuid.UUID(value)
             return value
+
+
+def validate_uuid(id_string: str) -> bool:
+    """
+    Validate that a id string is in
+    fact a valid uuid4.
+    It is vital that the 'version' kwarg be passed
+    to the UUID() call, otherwise any 32-character
+    hex string is considered valid.
+    """
+
+    try:
+        val = uuid.UUID(id_string, version=4)
+    except ValueError:
+        return False
+
+    return val.hex == id_string.replace("-", "")

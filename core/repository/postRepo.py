@@ -2,8 +2,13 @@ from typing import List
 from asyncio.runners import run
 from sqlalchemy.orm import Session
 
-from ..schemas.postSchema import BasePost, Post, Status
+from ..schemas.postSchema import PostCreate, Post, Status
 from ..models.postModel import PostModel
+from ..config.typing import validate_uuid
+
+
+class NotFoundException(Exception):
+    pass
 
 
 async def get_posts(db: Session):
@@ -11,7 +16,7 @@ async def get_posts(db: Session):
     return posts
 
 
-async def create_post(db: Session, post: BasePost):
+async def create_post(db: Session, post: PostCreate):
     db_post = PostModel(**post.dict())
     db.add(db_post)
     db.commit()
@@ -20,12 +25,12 @@ async def create_post(db: Session, post: BasePost):
     return db_post
 
 
-async def add_posts(db: Session, posts: List[BasePost]):
+async def add_posts(db: Session, posts: List[PostCreate]):
     for post in posts:
         yield await create_post(db, post)
 
 
-async def add_mulitple(db: Session, postList: List[BasePost]):
+async def add_mulitple(db: Session, postList: List[PostCreate]):
 
     posts = [post async for post in add_posts(db, postList)]
     return posts
@@ -34,13 +39,13 @@ async def add_mulitple(db: Session, postList: List[BasePost]):
 async def get_post(db: Session, id: str):
     posts = await get_posts(db)
     if len(posts) < 1:
-        raise Exception({"message": "There are no posts yet!"})
+        raise NotFoundException({"message": "There are no posts yet!"})
 
     db_post = db.query(PostModel).filter(PostModel.id == id).first()
     if db_post:
         return db_post
 
-    raise Exception({"message": f"Cannot find post with id: {id}"})
+    raise NotFoundException({"message": f"Cannot find post with id: {id}"})
 
 
 def get_post_by_status(status: Status, postList: List[Post]) -> List[Post]:
@@ -62,7 +67,7 @@ def get_post_by_attribute(attribute: str, postList: List[Post]) -> List[Post]:
     ]
 
 
-async def edit_post(db: Session, id: str, details: BasePost):
+async def edit_post(db: Session, id: str, details: PostCreate):
     post = await get_post(db, id)
     post.title = details.title
     post.description = details.description

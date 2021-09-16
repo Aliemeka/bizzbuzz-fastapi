@@ -1,9 +1,11 @@
+from core.dependencies.validations import validate_id
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional, TypedDict
 from sqlalchemy.orm.session import Session
 
-from ..schemas.postSchema import Post, BasePost, Status
+from ..schemas.postSchema import Post, PostCreate, Status
 from ..repository import postRepo
+from ..repository.postRepo import NotFoundException
 from ..config.session import get_db
 
 router = APIRouter(prefix="/posts", tags=["posts"])
@@ -27,48 +29,52 @@ async def get_posts(
 
 
 @router.post("/", status_code=201, response_model=Post)
-async def create_post(post: BasePost, db: Session = Depends(get_db)):
+async def create_post(post: PostCreate, db: Session = Depends(get_db)):
     return await postRepo.create_post(db, post)
 
 
 @router.post("/multiple", status_code=201, response_model=List[Post])
-async def add_multiple(posts: List[BasePost], db: Session = Depends(get_db)):
+async def add_multiple(posts: List[PostCreate], db: Session = Depends(get_db)):
     return await postRepo.add_mulitple(db, posts)
 
 
 @router.get("/{id}", response_model=Post)
-async def get_post(id: str, db: Session = Depends(get_db)):
+async def get_post(id: str = Depends(validate_id), db: Session = Depends(get_db)):
     try:
         post = await postRepo.get_post(db, id)
         return post
-    except Exception as e:
+    except NotFoundException as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])
 
 
 @router.put("/{id}", response_model=Post)
-async def update_post(id: str, details: BasePost, db: Session = Depends(get_db)):
+async def update_post(
+    details: PostCreate, id: str = Depends(validate_id), db: Session = Depends(get_db)
+):
     try:
         post = await postRepo.edit_post(db, id, details)
         return post
-    except Exception as e:
+    except NotFoundException as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])
 
 
 @router.patch("/{id}/status", response_model=Post)
 async def change_post_status(
-    id: str, payload: StatusPayload, db: Session = Depends(get_db)
+    payload: StatusPayload,
+    id: str = Depends(validate_id),
+    db: Session = Depends(get_db),
 ):
     try:
         post = await postRepo.change_post_status(db, id, payload["status"])
         return post
-    except Exception as e:
+    except NotFoundException as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])
 
 
 @router.delete("/{id}", response_model=TypedDict("Message", message=str))
-async def remove_post(id: str, db: Session = Depends(get_db)):
+async def remove_post(id: str = Depends(validate_id), db: Session = Depends(get_db)):
     try:
         await postRepo.delete_post(db, id)
         return {"message": f"Post with id: {id} has been deleted successfully"}
-    except Exception as e:
+    except NotFoundException as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])
