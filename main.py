@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.routing import APIRouter
 from typing import List
 
-from core.routers import posts, users
+from core.routers import auth, posts
 from core.config.database import engine
 from core.models import postModel, userModel
 
@@ -21,7 +21,7 @@ def configure_routes(routers: List[APIRouter], prefix: str = "/api/v1"):
         app.include_router(router, prefix=prefix)
 
 
-configure_routes([posts.router, users.router])
+configure_routes([posts.router, auth.router])
 
 
 @app.get("/")
