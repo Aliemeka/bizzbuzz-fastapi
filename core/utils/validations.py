@@ -3,7 +3,7 @@ import re
 
 class ValidationError(Exception):
     def __init__(self, message: str, field: str):
-        super().__init__({"message": message, "field": field})
+        super().__init__({"error": message, "field": field})
 
 
 class Validate:

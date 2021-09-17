@@ -1,37 +1,45 @@
-import re
 from sqlalchemy.orm import Session
 
-from ..schemas.userSchema import UserCreate
+from ..schemas.userSchema import UserCreate, UserLogin
 from ..models.userModel import User as UserModel
 from ..utils.authentication import Hash
+from ..utils.validations import Validate
 
 
 class UserAlreadyExistException(Exception):
     pass
 
 
-async def email_exist(db: Session, email: str) -> bool:
+class UserDoesNotExistException(Exception):
+    pass
+
+
+class InvalidPasswordError(Exception):
+    pass
+
+
+async def get_user_by_email(db: Session, email: str):
     db_user = db.query(UserModel).filter(UserModel.email == email).one_or_none()
     if db_user == None:
         return False
-    return True
+    return db_user
 
 
-async def username_exist(db: Session, username: str) -> bool:
+async def get_user_by_username(db: Session, username: str):
     db_user = db.query(UserModel).filter(UserModel.username == username).one_or_none()
     if db_user == None:
         return False
-    return True
+    return db_user
 
 
 async def create_user(db: Session, details: UserCreate):
-    if await email_exist(db, details.email):
+    if await get_user_by_username(db, details.email):
         raise UserAlreadyExistException(
-            {"message": "Email already exist", "field": "email"}
+            {"error": "Email already exist", "field": "email"}
         )
-    if await username_exist(db, details.username):
+    if await get_user_by_username(db, details.username):
         raise UserAlreadyExistException(
-            {"message": "Username already exist", "field": "username"}
+            {"error": "Username already exist", "field": "username"}
         )
 
     db_user = UserModel(**details.dict())
@@ -41,3 +49,27 @@ async def create_user(db: Session, details: UserCreate):
     db.refresh(db_user)
 
     return db_user
+
+
+async def login_user(db: Session, details: UserLogin):
+    db_user: UserModel
+    login = details.login
+    password = details.password
+
+    is_email = Validate.email_valid(login)
+    if is_email:
+        db_user = await get_user_by_email(db, login)
+    else:
+        db_user = await get_user_by_username(db, login)
+
+    if db_user:
+        if not Hash.verify_password(password, db_user.password):
+            raise InvalidPasswordError(
+                {"error": f"Invalid password", "field": "password"}
+            )
+        return db_user
+
+    field_type = "email" if is_email else "username"
+    raise UserDoesNotExistException(
+        {"error": f"Cannot find any account that matches your {field_type}: {login}"}
+    )
