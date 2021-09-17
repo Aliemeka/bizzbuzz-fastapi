@@ -1,27 +1,12 @@
-import bcrypt
 import re
 from sqlalchemy.orm import Session
 
 from ..schemas.userSchema import UserCreate
 from ..models.userModel import User as UserModel
-
-
-def hash_password(password: str) -> str:
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(str.encode(password), salt)
-    return hashed_password.decode()
-
-
-def validate_email(input_string: str) -> bool:
-    regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-    return re.fullmatch(regex, input_string) != None
+from ..utils.authentication import Hash
 
 
 class UserAlreadyExistException(Exception):
-    pass
-
-
-class EmailValidationError(Exception):
     pass
 
 
@@ -40,8 +25,6 @@ async def username_exist(db: Session, username: str) -> bool:
 
 
 async def create_user(db: Session, details: UserCreate):
-    if not validate_email(details.email):
-        raise EmailValidationError({"message": f"Invalid email", "field": "email"})
     if await email_exist(db, details.email):
         raise UserAlreadyExistException(
             {"message": "Email already exist", "field": "email"}
@@ -52,8 +35,7 @@ async def create_user(db: Session, details: UserCreate):
         )
 
     db_user = UserModel(**details.dict())
-    print(vars(db_user))
-    db_user.password = hash_password(details.password)
+    db_user.password = Hash.hash_password(details.password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
