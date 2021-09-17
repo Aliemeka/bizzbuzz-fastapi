@@ -3,7 +3,8 @@ from sqlalchemy.orm.session import Session
 
 from ..config.session import get_db
 from ..dependencies.validations import validate_registration
-from ..schemas.userSchema import User, UserCreate, UserLogin, UserProfile
+from ..schemas.userSchema import UserCreate, UserLogin, UserProfile
+from ..schemas.tokenSchema import Token
 from ..repository.userRepo import (
     InvalidPasswordError,
     UserAlreadyExistException,
@@ -26,11 +27,11 @@ async def create_account(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.args[0])
 
 
-@router.post("/login", response_model=User)
+@router.post("/login", response_model=Token)
 async def login(details: UserLogin, db: Session = Depends(get_db)):
     try:
-        user = await login_user(db, details)
-        return user
+        response = await login_user(db, details)
+        return response
     except UserDoesNotExistException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.args[0])
     except InvalidPasswordError as e:

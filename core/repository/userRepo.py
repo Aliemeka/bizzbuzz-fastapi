@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import user
 
-from ..schemas.userSchema import UserCreate, UserLogin
+from ..schemas.userSchema import UserCreate, UserLogin, User
 from ..models.userModel import User as UserModel
-from ..utils.authentication import Hash
+from ..utils.authentication import Hash, jwt_auth
 from ..utils.validations import Validate
 
 
@@ -67,7 +68,9 @@ async def login_user(db: Session, details: UserLogin):
             raise InvalidPasswordError(
                 {"error": f"Invalid password", "field": "password"}
             )
-        return db_user
+        user = User(**vars(db_user))
+        token = jwt_auth.generate_token(user.dict())
+        return {"token": token, "user": str(user.id), "is_active": db_user.is_active}
 
     field_type = "email" if is_email else "username"
     raise UserDoesNotExistException(

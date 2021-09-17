@@ -1,6 +1,7 @@
 import bcrypt
 import jwt
 
+from ..schemas.userSchema import User
 from ..config.settings import settings
 
 
@@ -16,9 +17,10 @@ class Hash:
 
 class JWT:
     secret: str = settings.jwt_secret
-    algorithm: str = settings.jwt_secret
+    algorithm: str = settings.algorithm
 
-    def generate_token(self, user) -> str:
+    def generate_token(self, user: dict) -> str:
+        user["id"] = str(user["id"])
         return jwt.encode(user, self.secret, algorithm=self.algorithm)
 
     def decode_token(self, token):

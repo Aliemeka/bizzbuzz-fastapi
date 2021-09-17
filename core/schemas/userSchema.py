@@ -29,9 +29,12 @@ class UserProfile(UserBase):
 
 class User(UserBase):
     id: UUID
-    posts: List[Post]
-    created_at: datetime
-    updated_at: datetime
 
     class Config:
         orm_mode = True
+
+
+class UserDetails(User):
+    posts: List[Post]
+    created_at: datetime
+    updated_at: datetime
