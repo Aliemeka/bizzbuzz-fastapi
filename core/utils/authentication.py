@@ -3,6 +3,8 @@ import jwt
 from datetime import datetime, timedelta
 from typing import TypedDict
 
+from sqlalchemy.sql.functions import user
+
 from ..config.settings import settings
 from ..schemas.userSchema import User
 
@@ -51,6 +53,7 @@ class JWT:
             user_dict: UserDict = jwt.decode(
                 token, self.secret, algorithms=[self.algorithm]
             )
+            user_dict["exp"] = datetime.fromtimestamp(user_dict["exp"])
             if user_dict["exp"] >= datetime.utcnow():
                 return User(**user_dict)
             else:
