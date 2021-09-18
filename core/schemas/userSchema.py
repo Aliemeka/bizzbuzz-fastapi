@@ -32,9 +32,3 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
-
-
-class UserDetails(User):
-    posts: List[Post]
-    created_at: datetime
-    updated_at: datetime

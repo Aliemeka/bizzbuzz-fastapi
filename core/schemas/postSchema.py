@@ -1,7 +1,7 @@
+from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
 from uuid import UUID
-from datetime import datetime
 
 from ..config.enums import Status
 

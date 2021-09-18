@@ -20,6 +20,10 @@ class InvalidPasswordError(Exception):
     pass
 
 
+async def get_user_by_id(db: Session, id: str):
+    return db.query(UserModel).filter(UserModel.id == id).one_or_none()
+
+
 async def get_user_by_email(db: Session, email: str):
     db_user = db.query(UserModel).filter(UserModel.email == email).one_or_none()
     if db_user == None:

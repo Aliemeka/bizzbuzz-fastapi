@@ -1,19 +1,23 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional, TypedDict
 from sqlalchemy.orm.session import Session
+from uuid import UUID
 
 from ..schemas.postSchema import Post, PostCreate, Status
+from ..schemas.userSchema import User
+from ..schemas.mainSchema import PostDetails
 from ..repository import postRepo
 from ..repository.postRepo import NotFoundException
 from ..config.session import get_db
 from ..dependencies.validations import validate_id
+from ..dependencies.authentication import JWTBearer
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
 StatusPayload = TypedDict("StatusPayload", status=Status)
 
 
-@router.get("/", response_model=List[Post])
+@router.get("/", response_model=List[PostDetails])
 async def get_posts(
     status: Optional[Status] = None,
     search: Optional[str] = None,
@@ -29,8 +33,10 @@ async def get_posts(
 
 
 @router.post("/", status_code=201, response_model=Post)
-async def create_post(post: PostCreate, db: Session = Depends(get_db)):
-    return await postRepo.create_post(db, post)
+async def create_post(
+    post: PostCreate, db: Session = Depends(get_db), user: User = Depends(JWTBearer())
+):
+    return await postRepo.create_post(db, post, str(user.id))
 
 
 @router.post("/multiple", status_code=201, response_model=List[Post])

@@ -1,7 +1,10 @@
+from core.repository.userRepo import get_user_by_id
 from typing import List
+from uuid import UUID
 from sqlalchemy.orm import Session
 
 from ..models.postModel import Post as PostModel
+from ..models.userModel import User as UserModel
 from ..schemas.postSchema import PostCreate, Post, Status
 
 
@@ -11,15 +14,16 @@ class NotFoundException(Exception):
 
 async def get_posts(db: Session):
     posts = [post for post in db.query(PostModel).all()]
+    for post in posts:
+        post.author = await get_user_by_id(db, post.author_id)
     return posts
 
 
-async def create_post(db: Session, post: PostCreate):
-    db_post = PostModel(**post.dict())
+async def create_post(db: Session, post: PostCreate, userId: str):
+    db_post = PostModel(**post.dict(), author_id=userId)
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
-    print(db_post)
     return db_post
 
 
