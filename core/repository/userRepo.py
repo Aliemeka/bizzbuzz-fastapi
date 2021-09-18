@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import user
 
 from ..schemas.userSchema import UserCreate, UserLogin, User
+from ..schemas.tokenSchema import Token
 from ..models.userModel import User as UserModel
 from ..utils.authentication import Hash, jwt_auth
 from ..utils.validations import Validate
@@ -34,13 +35,11 @@ async def get_user_by_username(db: Session, username: str):
 
 
 async def create_user(db: Session, details: UserCreate):
-    if await get_user_by_username(db, details.email):
+    if await get_user_by_username(db, details.email) or await get_user_by_username(
+        db, details.username
+    ):
         raise UserAlreadyExistException(
             {"error": "Email already exist", "field": "email"}
-        )
-    if await get_user_by_username(db, details.username):
-        raise UserAlreadyExistException(
-            {"error": "Username already exist", "field": "username"}
         )
 
     db_user = UserModel(**details.dict())
@@ -52,16 +51,17 @@ async def create_user(db: Session, details: UserCreate):
     return db_user
 
 
-async def login_user(db: Session, details: UserLogin):
+async def login_user(db: Session, details: UserLogin) -> Token:
     db_user: UserModel
     login = details.login
     password = details.password
 
     is_email = Validate.email_valid(login)
-    if is_email:
-        db_user = await get_user_by_email(db, login)
-    else:
-        db_user = await get_user_by_username(db, login)
+    db_user = (
+        await get_user_by_email(db, login)
+        if is_email
+        else await get_user_by_username(db, login)
+    )
 
     if db_user:
         if not Hash.verify_password(password, db_user.password):
@@ -70,7 +70,14 @@ async def login_user(db: Session, details: UserLogin):
             )
         user = User(**vars(db_user))
         token = jwt_auth.generate_token(user.dict())
-        return {"token": token, "user": str(user.id), "is_active": db_user.is_active}
+        return Token(
+            **{
+                "token": token,
+                "user": str(user.id),
+                "expires": jwt_auth.get_expiry_time(),
+                "is_active": db_user.is_active,
+            }
+        )
 
     field_type = "email" if is_email else "username"
     raise UserDoesNotExistException(
