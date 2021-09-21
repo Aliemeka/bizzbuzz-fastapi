@@ -76,9 +76,10 @@ async def change_post_status(
     payload: StatusPayload,
     id: str = Depends(validate_id),
     db: Session = Depends(get_db),
+    user: User = Depends(JWTBearer()),
 ):
     try:
-        post = await postRepo.change_post_status(db, id, payload["status"])
+        post = await postRepo.change_post_status(db, id, payload["status"], user.id)
         return post
     except NotFoundException as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])
@@ -87,9 +88,13 @@ async def change_post_status(
 
 
 @router.delete("/{id}", response_model=TypedDict("Message", message=str))
-async def remove_post(id: str = Depends(validate_id), db: Session = Depends(get_db)):
+async def remove_post(
+    id: str = Depends(validate_id),
+    db: Session = Depends(get_db),
+    user: User = Depends(JWTBearer()),
+):
     try:
-        await postRepo.delete_post(db, id)
+        await postRepo.delete_post(db, id, user.id)
         return {"message": f"Post with id: {id} has been deleted successfully"}
     except NotFoundException as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])

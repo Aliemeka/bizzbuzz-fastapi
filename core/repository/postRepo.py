@@ -73,12 +73,16 @@ def get_post_by_attribute(attribute: str, postList: List[Post]) -> List[Post]:
     ]
 
 
-async def edit_post(db: Session, id: str, details: PostCreate, user_id: str):
-    post = await get_post(db, id)
-    if str(post.author_id) != str(user_id):
+def authorised_user(author_id, user_id):
+    if str(author_id) != str(user_id):
         raise UnauthorizedOperationError(
             "Only post author can carry out operation on this post"
         )
+
+
+async def edit_post(db: Session, id: str, details: PostCreate, user_id: str):
+    post = await get_post(db, id)
+    authorised_user(post.author_id, user_id)
     post.title = details.title
     post.description = details.description
     if details.status:
@@ -88,15 +92,17 @@ async def edit_post(db: Session, id: str, details: PostCreate, user_id: str):
     return post
 
 
-async def change_post_status(db: Session, id: str, status: Status):
+async def change_post_status(db: Session, id: str, status: Status, user_id: str):
     post = await get_post(db, id)
+    authorised_user(post.author_id, user_id)
     post.status = status
     db.commit()
     db.refresh(post)
     return post
 
 
-async def delete_post(db: Session, id: str):
+async def delete_post(db: Session, id: str, user_id: str):
     post = await get_post(db, id)
+    authorised_user(post.author_id, user_id)
     db.delete(post)
     db.commit()
