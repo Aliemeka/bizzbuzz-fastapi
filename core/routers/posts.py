@@ -7,7 +7,7 @@ from ..schemas.postSchema import Post, PostCreate, Status
 from ..schemas.userSchema import User
 from ..schemas.mainSchema import PostDetails
 from ..repository import postRepo
-from ..repository.postRepo import NotFoundException
+from ..repository.postRepo import NotFoundException, UnauthorizedOperationError
 from ..config.session import get_db
 from ..dependencies.validations import validate_id
 from ..dependencies.authentication import JWTBearer
@@ -40,8 +40,12 @@ async def create_post(
 
 
 @router.post("/multiple", status_code=201, response_model=List[Post])
-async def add_multiple(posts: List[PostCreate], db: Session = Depends(get_db)):
-    return await postRepo.add_mulitple(db, posts)
+async def add_multiple(
+    posts: List[PostCreate],
+    db: Session = Depends(get_db),
+    user: User = Depends(JWTBearer()),
+):
+    return await postRepo.add_mulitple(db, posts, user.id)
 
 
 @router.get("/{id}", response_model=Post)
@@ -55,10 +59,13 @@ async def get_post(id: str = Depends(validate_id), db: Session = Depends(get_db)
 
 @router.put("/{id}", response_model=Post)
 async def update_post(
-    details: PostCreate, id: str = Depends(validate_id), db: Session = Depends(get_db)
+    details: PostCreate,
+    id: str = Depends(validate_id),
+    db: Session = Depends(get_db),
+    user: User = Depends(JWTBearer()),
 ):
     try:
-        post = await postRepo.edit_post(db, id, details)
+        post = await postRepo.edit_post(db, id, details, user.id)
         return post
     except NotFoundException as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])
@@ -75,6 +82,8 @@ async def change_post_status(
         return post
     except NotFoundException as e:
         raise HTTPException(status_code=404, detail=e.args[0]["message"])
+    except UnauthorizedOperationError as e:
+        raise HTTPException(status_code=403, detail=e.args[0]["message"])
 
 
 @router.delete("/{id}", response_model=TypedDict("Message", message=str))

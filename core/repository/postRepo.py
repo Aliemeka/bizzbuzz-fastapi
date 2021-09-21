@@ -4,12 +4,16 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from ..models.postModel import Post as PostModel
-from ..models.userModel import User as UserModel
 from ..schemas.postSchema import PostCreate, Post, Status
 
 
 class NotFoundException(Exception):
     pass
+
+
+class UnauthorizedOperationError(Exception):
+    def __init__(self, message: str):
+        super().__init__({"message": message})
 
 
 async def get_posts(db: Session):
@@ -19,22 +23,22 @@ async def get_posts(db: Session):
     return posts
 
 
-async def create_post(db: Session, post: PostCreate, userId: str):
-    db_post = PostModel(**post.dict(), author_id=userId)
+async def create_post(db: Session, post: PostCreate, user_id: str):
+    db_post = PostModel(**post.dict(), author_id=user_id)
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
     return db_post
 
 
-async def add_posts(db: Session, posts: List[PostCreate]):
+async def add_posts(db: Session, posts: List[PostCreate], user_id: str):
     for post in posts:
-        yield await create_post(db, post)
+        yield await create_post(db, post, user_id)
 
 
-async def add_mulitple(db: Session, postList: List[PostCreate]):
+async def add_mulitple(db: Session, postList: List[PostCreate], user_id: str):
 
-    posts = [post async for post in add_posts(db, postList)]
+    posts = [post async for post in add_posts(db, postList, user_id)]
     return posts
 
 
@@ -69,10 +73,16 @@ def get_post_by_attribute(attribute: str, postList: List[Post]) -> List[Post]:
     ]
 
 
-async def edit_post(db: Session, id: str, details: PostCreate):
+async def edit_post(db: Session, id: str, details: PostCreate, user_id: str):
     post = await get_post(db, id)
+    if str(post.author_id) != str(user_id):
+        raise UnauthorizedOperationError(
+            "Only post author can carry out operation on this post"
+        )
     post.title = details.title
     post.description = details.description
+    if details.status:
+        post.status = details.status
     db.commit()
     db.refresh(post)
     return post
