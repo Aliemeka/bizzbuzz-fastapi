@@ -29,6 +29,8 @@ BizzBuzz API, a makeshift social media application that allows user to create lo
 [Swagger UI](https://swagger.io/ "swagger ui website") for API documentation (embedded in FastAPI by default)<br>
 [Redocs](https://redoc.ly/ "Redocly website") - alternative API documentation (embedded in FastAPI by default)<br>
 [SQLAlchemy](https://www.sqlalchemy.org/ "SQLAlchemy") - database orm for interacting with SQL database<br>
+[Bcrypt](https://pypi.org/project/bcrypt/ "bcrypt") - for password hashing<br>
+[PyJWT](https://pyjwt.readthedocs.io/en/stable/ "PyJWT documentation") - for generating jwt tokens used for user authentication <br>
 
 ### Dev dependencies
 
