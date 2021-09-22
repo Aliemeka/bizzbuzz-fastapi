@@ -38,6 +38,11 @@ BizzBuzz API, a makeshift social media application that allows user to create lo
 
 ## Routes
 
+### Authentication routes <code>/auth/\*</code>
+
+- **POST** <code>/auth/register</code> registers a new user
+- **POST** <code>/auth/login</code> logins a user using either the username or email and password
+
 ### Posts routes <code>/posts</code>
 
 - **GET** <code>/posts</code> gets post (can also take "search" and "status" query parameter)
