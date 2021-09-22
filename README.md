@@ -46,11 +46,11 @@ BizzBuzz API, a makeshift social media application that allows user to create lo
 ### Posts routes <code>/posts</code>
 
 - **GET** <code>/posts</code> gets post (can also take "search" and "status" query parameter)
-- **POST** <code>/posts</code> adds a new post
+- **POST** <code>/posts</code> adds a new post \*
 - **GET** <code>/posts/{postId}</code> gets a post by id
-- **PUT** <code>/posts/{postId}</code> updates a post that matches an id
-- **PATCH** <code>/posts/{postId}/status</code> updates the status of a post that matches an id
-- **DELETE** <code>/posts/{postId}</code> deletes a post from database
+- **PUT** <code>/posts/{postId}</code> updates a post that matches an id \* \*\*
+- **PATCH** <code>/posts/{postId}/status</code> updates the status of a post that matches an id \* \*\*
+- **DELETE** <code>/posts/{postId}</code> deletes a post from database \* \*\*
 
 <code>*</code> *requires jwt token on Authorization header of request* <br>
 <code>\*\*</code> *requires that user is the author of post/like/reply\*
