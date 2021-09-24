@@ -6,6 +6,7 @@ from ..schemas.tokenSchema import Token
 from ..models.userModel import User as UserModel
 from ..utils.authentication import Hash, jwt_auth
 from ..utils.validations import Validate
+from ..utils.mailservice import send_email
 
 
 class UserAlreadyExistException(Exception):
@@ -51,7 +52,11 @@ async def create_user(db: Session, details: UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-
+    await send_email(
+        db_user,
+        f"Welcome to Bizzbuzz {db_user.first_name + ' ' + db_user.last_name}",
+        "Welcome to BizzBuzz",
+    )
     return db_user
 
 
