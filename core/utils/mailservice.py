@@ -30,6 +30,6 @@ async def send_email(
     }
 
     try:
-        response = sg.send(msg)
+        sg.send(msg)
     except Exception as e:
         print(e)

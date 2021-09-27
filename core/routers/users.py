@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm.session import Session
 
 from ..config.session import get_db
+from ..dependencies.authentication import JWTBearer
 from ..dependencies.validations import validate_registration
 from ..schemas.userSchema import User, UserCreate, UserLogin, UserProfile
 from ..repository.userRepo import (

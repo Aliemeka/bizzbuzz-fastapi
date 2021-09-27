@@ -92,3 +92,15 @@ async def login_user(db: Session, details: UserLogin) -> Token:
     raise UserDoesNotExistException(
         {"error": f"Cannot find any account that matches your {field_type}: {login}"}
     )
+
+async def change_password(db: Session, current_password: str, new_password: str, id: str):
+    db_user = await get_user_by_id(db, id)
+    if not db_user:
+        raise UserDoesNotExistException({ "error": "User does not exist"})
+    if not Hash.verify_password(current_password, db_user.password):
+        raise InvalidPasswordError(
+                {"error": f"Current password is invalid", "field": "password"}
+            )
+    db_user.password = Hash.hash_password(new_password)
+    db.commit()
+    db.refresh(db_user)
