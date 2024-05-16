@@ -15,8 +15,8 @@ class Validate:
         return re.fullmatch(regex, email) != None
 
     def password_valid(password: str):
-        regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d){6,20}$"
-        return re.search(regex, password) != None
+        regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,20}$"
+        return bool(re.search(regex, password))
 
     def validate_email(email: str):
         """
