@@ -2,6 +2,8 @@
 
 BizzBuzz API, a makeshift social media application that allows user to create long post messages.
 
+![Swagger Doc Screenshot](./swagger-screenshot.png)
+
 ## Endpoint documentation
 
 [Swagger Documentation](http://localhost:8000/docs "BizzBuzz FastAPI Swagger Documentation")<br>
