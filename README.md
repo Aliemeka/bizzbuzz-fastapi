@@ -11,7 +11,7 @@ BizzBuzz API, a makeshift social media application that allows user to create lo
 
 ## Requirements
 
-- You must be using at least Python 3.6
+- You must be using at least Python 3.10
 
 ## Set up
 
@@ -33,6 +33,7 @@ BizzBuzz API, a makeshift social media application that allows user to create lo
 [SQLAlchemy](https://www.sqlalchemy.org/ "SQLAlchemy") - database orm for interacting with SQL database<br>
 [Bcrypt](https://pypi.org/project/bcrypt/ "bcrypt") - for password hashing<br>
 [PyJWT](https://pyjwt.readthedocs.io/en/stable/ "PyJWT documentation") - for generating jwt tokens used for user authentication <br>
+[Sendgrid](https://github.com/sendgrid/sendgrid-python "Sendgrid documentation") - sendgrid library for sending emails <br>
 
 ### Dev dependencies
 
