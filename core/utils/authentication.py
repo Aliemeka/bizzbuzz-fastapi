@@ -1,7 +1,7 @@
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
-from typing import TypedDict
+from typing_extensions import TypedDict
 
 from sqlalchemy.sql.functions import user
 

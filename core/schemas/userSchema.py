@@ -24,11 +24,11 @@ class UserLogin(BaseModel):
 
 class UserProfile(UserBase):
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class User(UserBase):
     id: UUID
 
     class Config:
-        orm_mode = True
+        from_attributes = True

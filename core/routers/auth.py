@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm.session import Session
-from typing import TypedDict
+from typing_extensions import TypedDict
 
 from ..config.session import get_db
 from ..dependencies.validations import validate_registration

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Optional, TypedDict
+from typing import List, Optional
+from typing_extensions import TypedDict
 from sqlalchemy.orm.session import Session
 from uuid import UUID
 
